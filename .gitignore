@@ -1,0 +1,25 @@
+## Deprecated
+**/.old
+**/**.old.**
+**/**.old
+
+## IDE Settings
+**/.vs
+**/.vscode
+**/.idea
+
+# Dependencies
+**/node_modules
+**/obj
+
+## Builds
+**/build
+**/bin
+**/dist
+
+## Enviroment Arguments
+.envrc
+**/**.local.**
+**/**.dev.**
+**/**.prod.**
+!**/**.example.**

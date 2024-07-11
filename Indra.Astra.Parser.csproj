@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lexer\Indra.Astra.Lexer\Indra.Astra.Lexer.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\libs\utils\cs\Meep.Tech.Collections.ReadOnlySet\Meep.Tech.Collections.ReadOnlySet.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\libs\utils\cs\Meep.Tech.Extensions.Collections\Meep.Tech.Extensions.Collections.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\libs\utils\cs\Meep.Tech.Logs\Meep.Tech.Logs.csproj" />
+    <ProjectReference Include="..\..\..\..\..\..\libs\utils\cs\Meep.Tech.Extensions.Text\Meep.Tech.Extensions.Text.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup> 
+  
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="$(ProjectDir)rules" DestinationFolder="$(OutputDir)rules" ContinueOnError="false" />
+  </Target>
+
+</Project>
