@@ -9,7 +9,7 @@ using Indra.Astra.Expressions;
 namespace Indra.Astra.Rules {
 
   public abstract partial class Rule
-    : IBasic<Rule> {
+    : IRule<Rule> {
 
     #region Private Fields
 

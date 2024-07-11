@@ -7,7 +7,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class NoneOrMore
-    : Rule, IBasic<NoneOrMore> {
+    : Rule, IRule<NoneOrMore> {
 
     public static new NoneOrMore Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);

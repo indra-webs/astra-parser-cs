@@ -8,7 +8,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Group
-    : Rule, IBasic<Group> {
+    : Rule, IRule<Group> {
     public static new Group Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
 

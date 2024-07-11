@@ -8,7 +8,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Choice
-  : Rule, IBasic<Choice> {
+  : Rule, IRule<Choice> {
     public static new Choice Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);
       cursor.Skip(c => c.Type is IWhitespace);

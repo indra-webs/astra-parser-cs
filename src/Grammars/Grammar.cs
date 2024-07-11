@@ -20,6 +20,10 @@ namespace Indra.Astra {
 
   public partial class Grammar {
 
+    #region Private Fields
+    private readonly Dictionary<string, (int, int)>? _refs = [];
+    #endregion
+
     /// <summary>
     /// The available variants of the grammer via the different styntax contexts available to it.
     /// </summary>
@@ -34,6 +38,8 @@ namespace Indra.Astra {
     /// The rules given the current context.
     /// </summary>
     public RuleDictionary Rules { get; }
+
+    #region Initialization
 
     public Grammar(params Source[] contexts) {
       // require at least one valid context
@@ -108,34 +114,44 @@ namespace Indra.Astra {
       }
 
       bool validateRules(ReadOnlyRuleDictionary readOnlyDictionary, [NotNullWhen(false)] out string? message) {
+        _refs.ForEach(r => {
+          if(!readOnlyDictionary.ContainsKey(r)) {
+            message = $"Reference: '{r}' not found in any context.";
+            return false;
+          }
+        });
 
+        _refs = null;
       }
 
       #endregion
     }
 
-  }
+    internal void _registerReference(string name)
+      => _refs!.Add(name);
 
-  public string ToSExpression(params string[] contexts) {
-    StringBuilder sb = new($"(grammar #ctx:{Context.Key}\n");
-    if(contexts.Length == 0) {
-      foreach(Rule rule in Rules.Values) {
-        sb.Append(rule.ToSExpression().Indent());
-        sb.AppendLine();
-      }
-    }
-    else {
-      foreach(Source context in contexts.Select(c => Contexts.First(c => c.Key == c))) {
-        sb.Append($"\t\n(@{context.Key} #ctx");
-        foreach(Rule rule in Rules.From(context).Values) {
-          sb.Append(rule.ToSExpression().Indent(2));
+    #endregion
+
+    public string ToSExpression(params string[] contexts) {
+      StringBuilder sb = new($"(grammar #ctx:{Context.Key}\n");
+      if(contexts.Length == 0) {
+        foreach(Rule rule in Rules.Values) {
+          sb.Append(rule.ToSExpression().Indent());
           sb.AppendLine();
         }
-        sb.Append(')');
       }
-    }
+      else {
+        foreach(Source context in contexts.Select(c => Contexts.First(c => c.Key == c))) {
+          sb.Append($"\t\n(@{context.Key} #ctx");
+          foreach(Rule rule in Rules.From(context).Values) {
+            sb.Append(rule.ToSExpression().Indent(2));
+            sb.AppendLine();
+          }
+          sb.Append(')');
+        }
+      }
 
-    return sb.Append(')').ToString();
+      return sb.Append(')').ToString();
+    }
   }
-}
 }

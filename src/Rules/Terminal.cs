@@ -7,7 +7,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Terminal
-    : Rule, IBasic<Terminal> {
+    : Rule, IRule<Terminal> {
     public static new Terminal Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
       if(cursor.Current.Is<Word>() && cursor.Current.Text.IsUpper()) {

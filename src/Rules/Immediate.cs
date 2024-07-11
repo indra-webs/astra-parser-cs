@@ -8,7 +8,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Immediate
-    : Rule, IBasic<Immediate> {
+    : Rule, IRule<Immediate> {
     public static new Immediate Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
       cursor.Skip(c => c.Type is IWhitespace);

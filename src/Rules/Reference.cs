@@ -8,7 +8,7 @@ using Meep.Tech.Collections;
 
 namespace Indra.Astra.Rules {
   public class Reference
-    : Rule, IBasic<Reference> {
+    : Rule, IRule<Reference> {
     public static new Reference Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
 
@@ -23,6 +23,7 @@ namespace Indra.Astra.Rules {
           cursor.Skip(2);
         }
 
+        grammar._registerReference(name);
         return new Reference(name);
       }
       else {

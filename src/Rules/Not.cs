@@ -8,7 +8,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Not
-  : Rule, IBasic<Not> {
+  : Rule, IRule<Not> {
     public static new Not Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);
       cursor.Skip(c => c.Type is IWhitespace);

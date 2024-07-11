@@ -7,7 +7,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Sequence
-    : Rule, IBasic<Sequence> {
+    : Rule, IRule<Sequence> {
     public static new Sequence Parse(TokenCursor cursor, Grammar grammar, [NotNull] IReadOnlyList<Rule>? seq = null)
       => seq is null || seq.Count < 2
         ? throw new ArgumentException("Current parser sequence must contain at least two rules.")

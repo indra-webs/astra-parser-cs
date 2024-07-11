@@ -9,7 +9,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public class Tagged
-    : Rule, IBasic<Tagged> {
+    : Rule, IRule<Tagged> {
     public static new Tagged Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);
       cursor.Skip(c => c.Type is IWhitespace);

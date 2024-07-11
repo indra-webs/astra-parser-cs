@@ -8,7 +8,7 @@ using Meep.Tech.Text;
 
 namespace Indra.Astra.Rules {
   public abstract class Custom
-    : Rule, IBasic<Custom> {
+    : Rule, IRule<Custom> {
 
     public static new Custom Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       string name = null!;

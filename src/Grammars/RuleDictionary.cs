@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 using Indra.Astra.Rules;
+using Indra.Astra.Tokens;
 
 using Meep.Tech.Collections;
 
@@ -17,6 +18,7 @@ using ReadOnlyRuleDictionary
 namespace Indra.Astra {
 
   public partial class Grammar {
+
     public class RuleDictionary
       : IReadOnlyDictionary<string, Rule> {
 
