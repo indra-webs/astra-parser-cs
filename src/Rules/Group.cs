@@ -3,12 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Tokens;
 using Indra.Astra.Expressions;
 
-using Meep.Tech.Collections;
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public class Group
-    : Rule, IRule<Group> {
+  : Rule, IRule<Group> {
     public static new Group Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
 

@@ -1,12 +1,9 @@
 using Indra.Astra.Tokens;
 using Indra.Astra.Expressions;
 
-using Meep.Tech.Collections;
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public class Optional
-    : Rule, IRule<Optional> {
+  : Rule, IRule<Optional> {
     public static new Optional Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       if(seq is null) {
         cursor.Skip(c => c.Type is IWhitespace);

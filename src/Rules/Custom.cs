@@ -3,12 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Tokens;
 using Indra.Astra.Expressions;
 
-using Meep.Tech.Collections;
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public abstract class Custom
-    : Rule, IRule<Custom> {
+  : Rule, IRule<Custom> {
 
     public static new Custom Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       string name = null!;

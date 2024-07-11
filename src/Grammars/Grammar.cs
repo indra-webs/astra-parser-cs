@@ -1,12 +1,8 @@
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 
 using Indra.Astra.Rules;
-
-using Meep.Tech.Collections;
-using Meep.Tech.Text;
 
 using ReadOnlyRuleDictionary
   = System.Collections.ObjectModel

@@ -3,12 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Tokens;
 using Indra.Astra.Expressions;
 
-using Meep.Tech.Text;
-using Meep.Tech.Collections;
-
 namespace Indra.Astra.Rules {
   public class Reference
-    : Rule, IRule<Reference> {
+  : Rule, IRule<Reference> {
     public static new Reference Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
 

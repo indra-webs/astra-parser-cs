@@ -3,12 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Expressions;
 using Indra.Astra.Tokens;
 
-using Meep.Tech.Collections;
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public class Not
-  : Rule, IRule<Not> {
+: Rule, IRule<Not> {
     public static new Not Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);
       cursor.Skip(c => c.Type is IWhitespace);

@@ -3,11 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Tokens;
 using Indra.Astra.Expressions;
 
-using Meep.Tech.Collections;
-
 namespace Indra.Astra.Rules {
   public class OneOrMore
-  : Rule, IRule<OneOrMore> {
+: Rule, IRule<OneOrMore> {
     public static new OneOrMore Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);
       cursor.Skip(c => c.Type is IWhitespace);

@@ -1,6 +1,4 @@
-﻿using Indra.Astra.OldRules;
-
-namespace Indra.Astra {
+﻿namespace Indra.Astra {
 
   public enum FileType {
     Axa,
@@ -10,9 +8,9 @@ namespace Indra.Astra {
     Mup
   }
 
-  public partial class Parser {
+  public partial class Parser(Parser.Config config = null!) {
+
     #region Private Fields
-    private readonly Lazy<OldRules.Types> _rules;
     #endregion
 
     /// <summary>
@@ -27,13 +25,6 @@ namespace Indra.Astra {
       Lexer.Result Lexed,
       FileType FileType = FileType.Axa
     ) {
-      #region Private Fields
-      internal static readonly Dictionary<Thread, Lexer.Result> _threads
-        = [];
-      internal static Input _current
-        => _threads[Thread.CurrentThread];
-      #endregion
-
       public static implicit operator Input(Lexer.Result lexed)
         => new(lexed);
 
@@ -45,21 +36,10 @@ namespace Indra.Astra {
     /// The configuration settings for this parser.
     /// </summary>
     public Config Settings { get; }
-
-    /// <summary>
-    /// The compiled rules for this parser.
-    /// </summary>
-    public OldRules.Types Rules
-      => _rules.Value;
-
-    public Parser(Config config = null!) {
-      Settings = config ?? new();
-      _rules = new(() => new(Settings));
-    }
+      = config ?? new();
 
     public void Parse(Lexer.Result input) {
-      Input._threads[Thread.CurrentThread] = input;
-
+      throw new NotImplementedException();
     }
   }
 }

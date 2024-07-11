@@ -3,12 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Expressions;
 using Indra.Astra.Tokens;
 
-using Meep.Tech.Collections;
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public class Immediate
-    : Rule, IRule<Immediate> {
+  : Rule, IRule<Immediate> {
     public static new Immediate Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is null);
       cursor.Skip(c => c.Type is IWhitespace);

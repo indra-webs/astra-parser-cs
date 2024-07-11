@@ -1,13 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 using Indra.Astra.Expressions;
 
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public class Sequence
-    : Rule, IRule<Sequence> {
+  : Rule, IRule<Sequence> {
     public static new Sequence Parse(TokenCursor cursor, Grammar grammar, [NotNull] IReadOnlyList<Rule>? seq = null)
       => seq is null || seq.Count < 2
         ? throw new ArgumentException("Current parser sequence must contain at least two rules.")

@@ -1,9 +1,5 @@
 using System.Runtime.CompilerServices;
 
-using Indra.Astra.OldRules;
-
-using Meep.Tech.Collections;
-
 namespace Indra.Astra.Expressions {
   [CollectionBuilder(typeof(Sequence), nameof(Sequence.Build))]
   public abstract partial class Expression {

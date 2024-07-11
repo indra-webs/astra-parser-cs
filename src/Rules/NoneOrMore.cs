@@ -3,11 +3,9 @@ using System.Diagnostics.Contracts;
 using Indra.Astra.Expressions;
 using Indra.Astra.Tokens;
 
-using Meep.Tech.Text;
-
 namespace Indra.Astra.Rules {
   public class NoneOrMore
-    : Rule, IRule<NoneOrMore> {
+  : Rule, IRule<NoneOrMore> {
 
     public static new NoneOrMore Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
       Contract.Requires(seq is not null);
