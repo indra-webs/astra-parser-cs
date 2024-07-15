@@ -1,6 +1,6 @@
 namespace Indra.Astra {
 
-  public abstract partial class Grammar {
+  public partial class Grammar {
     public static class Sources {
       public const string Default
         = "default";

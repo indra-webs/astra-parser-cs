@@ -14,30 +14,48 @@ using ReadOnlyRuleDictionary
 
 namespace Indra.Astra {
 
-  public partial class Grammar {
+  public partial class Grammar
+    : ICloneable {
 
     #region Private Fields
-    private readonly Dictionary<string, (int, int)>? _refs = [];
+
+    private Dictionary<
+      string,
+      (Rule rule, TextCursor.Location pos, Source ctx)
+    >? _refs
+      = [];
+
     #endregion
 
     /// <summary>
-    /// The available variants of the grammer via the different styntax contexts available to it.
+    /// The available variants of the grammer via the 
+    ///   different styntax contexts available to it.
     /// </summary>
-    public IReadOnlyList<Source> Contexts { get; }
+    public IReadOnlyList<Source> Contexts { get; private init; }
 
     /// <summary>
-    /// The current style of the grammar. Determines which syntax to use as the default overriding context for rule resolution.
+    /// The current style of the grammar. 
+    /// Determines which syntax to use as the default
+    ///   overriding context for rule resolution.
     /// </summary>
     public Source Context { get; set; }
 
     /// <summary>
     /// The rules given the current context.
     /// </summary>
-    public RuleDictionary Rules { get; }
+    public RuleDictionary Rules { get; private init; }
 
     #region Initialization
 
-    public Grammar(params Source[] contexts) {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    /// <summary>
+    /// Clone constructor.
+    /// </summary>
+    private Grammar() { }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
+    public Grammar(params Source[] contexts)
+      : this() {
       // require at least one valid context
       Contract.Requires(contexts.Length > 0);
 
@@ -47,17 +65,18 @@ namespace Indra.Astra {
 
       // load rules
       ReadOnlyRuleDictionary rules = loadRules();
-      if(!validateRules(rules, out string? message)) {
+      Rules = new RuleDictionary(this, rules);
+
+      if(!validateRefs(out string? message)) {
         throw new ArgumentException(message);
       }
 
       // init rules dictionary
-      Rules = new RuleDictionary(this, rules);
 
       #region Local Helper Methods
 
       /// <summary> 
-      /// load all rules from all contexts, storing them in a dictionary by context key
+      /// load all rules from all contexts, storing them in a Dictionary by key
       /// </summary>
       ReadOnlyRuleDictionary loadRules() {
         Dictionary<string, Dictionary<string, Rule>> ctx
@@ -69,35 +88,16 @@ namespace Indra.Astra {
 
         // load each context
         foreach(Source context in Contexts) {
-
           // load each rule from the context
           Dictionary<string, Rule> rules = [];
-          if(ctx.TryAdd(context.Key, rules)) {
-            if(Directory.Exists(context.Path)) {
-              Console.WriteLine($"Loading context: '{context.Key}' from: '{context.Path}'.");
-            }
-            else {
-              throw new ArgumentException($"Path {context.Path} for Rule Context with key: '{context.Key}' does not exist.");
-            }
-          }
-          else {
-            throw new ArgumentException($"Context with key: '{context.Key}' already exists.");
+          if(!ctx.TryAdd(context.Key, rules)) {
+            throw new ArgumentException(
+              $"Context with key: '{context.Key}' already exists.");
           }
 
           Context = context;
-          Directory.GetFiles(context.Path, "*.rule", SearchOption.AllDirectories)
-            .ForEach(f => Console.WriteLine($"Loading all rules from file: {f} for context: {context.Key}."))
-            .Select(File.ReadAllText)
-            .SelectMany(text =>
-              text.Split(";\n")
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-            ).ForEach(code => Console.WriteLine($"Parsing rule: \n{code.Indent()}."))
-            .Select(source => Rule.Parse(source, this))
-            .ForEach(rule => rules.Add(
-              rule.Name,
-              rule))
-            .ForEach(rule => Console.WriteLine($"Sucessfully added rule: {rule.Name}, to context: {context.Key}."));
+          var result = Rule.Parser.ParseFromSource(context, this);
+
         }
 
         Console.WriteLine("All rules loaded successfully!");
@@ -109,22 +109,78 @@ namespace Indra.Astra {
         ).AsReadOnly();
       }
 
-      bool validateRules(ReadOnlyRuleDictionary readOnlyDictionary, [NotNullWhen(false)] out string? message) {
-        _refs.ForEach(r => {
-          if(!readOnlyDictionary.ContainsKey(r)) {
-            message = $"Reference: '{r}' not found in any context.";
-            return false;
-          }
-        });
-
+      /// <summary>
+      /// validate all references within the provided grammar rules
+      /// </summary>
+      bool validateRefs([NotNullWhen(false)] out string? message) {
+        Dictionary<string, (Rule rule, TextCursor.Location pos, Source ctx)> refs
+          = _refs!;
         _refs = null;
+
+        foreach((string k, (Rule r, TextCursor.Location p, Source c)) in refs) {
+          string? ctx, name = null!;
+          if(k.Contains('.')) {
+            string[] parts = k.Split('.');
+            ctx = parts[0];
+            name = parts[1];
+
+            if(!rules.ContainsKey(ctx)) {
+              message = error(
+                $"The context:'{ctx}' does not exist in the current grammar.");
+
+              return false;
+            }
+            else if(!Rules.Contexts[ctx].ContainsKey(name)) {
+              message = error(
+                $"The rule:'{name}' does not exist in the context:'{ctx}'.");
+
+              return false;
+            }
+          }
+          else {
+            if(!Rules.ContainsKey(k)) {
+              message = error(
+                $"The rule:'{k}' does not exist in the current grammar.");
+
+              return false;
+            }
+          }
+
+          #region Local Helper Methods
+
+          string error(string message) {
+            Rule named = r;
+            while(named is Rule.IPart part) {
+              named = part.Parent;
+            }
+
+            return $"""
+              [ERROR]: Failed to validate all references within the provided grammar rules.
+                [Message]: {message.Indent(inline: true)}
+                [Location]: [{p.Line}, {p.Column}]
+                  [file]: {c.Path}
+                  [rule]: {((Named)named).Key}
+                  [token]: {k}
+                  [line]: {p.Line}
+                  [column]: {p.Column}
+                  [Index]: {p.Index}
+              """;
+          }
+
+          #endregion
+        }
+
+        message = null;
+        return true;
       }
 
       #endregion
     }
-
-    internal void _registerReference(string name)
-      => _refs!.Add(name);
+    internal void _registerReference(
+      Reference rule,
+      Source ctx,
+      TextCursor.Location pos
+    ) => _refs!.Add(rule.Key, (rule, pos, ctx));
 
     #endregion
 
@@ -137,7 +193,8 @@ namespace Indra.Astra {
         }
       }
       else {
-        foreach(Source context in contexts.Select(c => Contexts.First(c => c.Key == c))) {
+        foreach(Source context
+        in contexts.Select(c => Contexts.First(c => c.Key == c))) {
           sb.Append($"\t\n(@{context.Key} #ctx");
           foreach(Rule rule in Rules.From(context).Values) {
             sb.Append(rule.ToSExpression().Indent(2));
@@ -149,5 +206,12 @@ namespace Indra.Astra {
 
       return sb.Append(')').ToString();
     }
+
+    public object Clone()
+      => new Grammar {
+        Contexts = Contexts,
+        Context = Context,
+        Rules = Rules
+      };
   }
 }

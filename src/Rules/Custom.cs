@@ -5,16 +5,25 @@ using Indra.Astra.Expressions;
 
 namespace Indra.Astra.Rules {
   public abstract class Custom
-  : Rule, IRule<Custom> {
+    : Rule,
+      IRule<Custom> {
 
-    public static new Custom Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
-      string name = null!;
+    public static new Custom Parse(
+      TokenCursor cursor,
+      Rule.Parser.Context context
+    ) {
+      Grammar? grammar = context.Grammar;
+      Rule? parent = context.Parent;
+      IReadOnlyList<Rule>? seq = context.Sequence;
+      Contract.Requires(parent is null);
+
+      string key = null!;
       try {
         Contract.Requires(seq is null);
         cursor.Skip(c => c.Type is IWhitespace);
 
         if(cursor.Current.Is<Word>()) {
-          name = cursor.Current.Text;
+          key = cursor.Current.Text;
 
           cursor.Skip();
           cursor.Skip(c => c.Type is IWhitespace);
@@ -24,26 +33,30 @@ namespace Indra.Astra.Rules {
           ) {
             cursor.Skip(2);
 
-            Rule rule = Rule.Parse(cursor, grammar);
-            return name.StartsWith('_')
-              ? new Hidden(name, rule)
-              : new Named(name, rule);
+            Rule rule = Rule.Parse(cursor, context);
+            return key.StartsWith('_')
+              ? new Hidden(key, rule)
+              : new Named(key, rule);
           }
           else {
-            throw new InvalidDataException("Expected `::=` as an assigner following the rule's key.");
+            throw new InvalidDataException(
+              "Expected `::=` as an assigner following the rule's key.");
           }
         }
         else {
-          throw new InvalidDataException("Expected an identifier for a rule key.");
+          throw new InvalidDataException(
+            "Expected an alphanumeric identifier/word as the rule key.");
         }
       }
       catch(Exception e) {
         throw new InvalidDataException($"""
-        [ERROR]: Failed to parse custom rule with key: {name ?? "???"}.
+        [ERROR]: Failed to parse custom rule with key: {key ?? "???"}.
           [Message]: {e.Message.Indent(inline: true)}
           [Location]: [{cursor.Current.Line}, {cursor.Current.Column}]
-            [file]: {grammar.Context.Path}
-            [token]: {cursor.Current.Name.ToSnakeCase().ToUpperInvariant()}{"{"}{cursor.Current.Text}{"}"}
+            [file]: {grammar?.Context.Path ?? "???"}
+            [token]: {cursor.Current.Name
+              .ToSnakeCase()
+              .ToUpperInvariant()}{"{"}{cursor.Current.Text}{"}"}
             [line]: {cursor.Current.Line}
             [column]: {cursor.Current.Column} 
             [Index]: {cursor.Current.Index}
@@ -53,10 +66,10 @@ namespace Indra.Astra.Rules {
 
     public Rule Rule { get; }
 
-    public string Name { get; }
+    public string Key { get; }
 
-    protected Custom(string name, Rule rule) {
-      Name = name;
+    protected Custom(string key, Rule rule) {
+      Key = key;
       Rule = rule;
     }
 
@@ -64,11 +77,11 @@ namespace Indra.Astra.Rules {
       => throw new NotImplementedException();
 
     public override string ToSExpression()
-      => $"({Name} ::= \n{Rule.ToSExpression().Indent()})";
+      => $"({Key} ::= \n{Rule.ToSExpression().Indent()})";
 
     public override string ToBbnf()
       => Rule is Tagged tagged
-      ? $"{Name} ::= {tagged.TagsToBbnf()}\n{tagged.Rule.ToBbnf().Indent()};"
-      : $"{Name} ::=\n{Rule.ToBbnf().Indent()};";
+      ? $"{Key} ::= {tagged.TagsToBbnf()}\n{tagged.Rule.ToBbnf().Indent()};"
+      : $"{Key} ::=\n{Rule.ToBbnf().Indent()};";
   }
 }

@@ -6,14 +6,19 @@ using Indra.Astra.Tokens;
 
 namespace Indra.Astra.Rules {
   public class Tagged
-  : Rule, IRule<Tagged> {
-    public static new Tagged Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
+    : Rule,
+      IRule<Tagged>,
+      Rule.IPart {
+    public static new Tagged Parse(TokenCursor cursor, Rule.Parser.Context context) {
+      Grammar? grammar = context.Grammar;
+      Rule? parent = context.Parent;
+      IReadOnlyList<Rule>? seq = context.Sequence;
       Contract.Requires(seq is not null);
-      cursor.Skip(c => c.Type is IWhitespace);
+      Contract.Requires(parent is not null);
 
+      cursor.Skip(c => c.Type is IWhitespace);
       Token? start = cursor.Current;
       Dictionary<string, string?>? tags = null;
-
       if(cursor.Current.Is<Hash>() && cursor.Current.Padding.After.IsNone) {
         while(!cursor.IsAtEnd) {
           // padding before the current token marks the end of a tag
@@ -43,14 +48,14 @@ namespace Indra.Astra.Rules {
         }
 
         if(seq!.Count == 0) {
-          return new Tagged(tags, null!);
+          return new Tagged(parent!, tags, null!);
         }
         else if(seq![^1] is Tagged tagged) {
           tags = tags.Concat(tagged.Tags).ToDictionary();
-          return new Tagged(tags, tagged.Rule);
+          return new Tagged(parent!, tags, tagged.Rule);
         }
         else {
-          return new Tagged(tags, seq[^1]);
+          return new Tagged(parent!, tags, seq[^1]);
         }
       }
       else {
@@ -87,10 +92,10 @@ namespace Indra.Astra.Rules {
 
     public Rule Rule { get; internal set; }
 
-    private Tagged(Dictionary<string, string?> tags, Rule rule) {
-      Tags = new ReadOnlyDictionary<string, string?>(tags);
-      Rule = rule;
-    }
+    public Rule Parent { get; }
+
+    private Tagged(Rule parent, Dictionary<string, string?> tags, Rule rule)
+      => (Parent, Tags, Rule) = (parent, new ReadOnlyDictionary<string, string?>(tags), rule);
 
     public override Expression Parse(TokenCursor cursor)
       => throw new NotImplementedException();

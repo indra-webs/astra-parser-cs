@@ -5,30 +5,36 @@ using Indra.Astra.Tokens;
 
 namespace Indra.Astra.Rules {
   public class Terminal
-  : Rule, IRule<Terminal> {
-    public static new Terminal Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
-      Contract.Requires(seq is null);
-      if(cursor.Current.Is<Word>() && cursor.Current.Text.IsUpper()) {
+    : Rule,
+      IRule<Terminal>,
+      Rule.IPart {
 
+    public static new Terminal Parse(TokenCursor cursor, Parser.Context context) {
+      Rule? parent = context.Parent;
+      Contract.Requires(parent is not null);
+
+      if(cursor.Current.Is<Word>() && cursor.Current.Text.IsUpper()) {
         string key = cursor.Current.Text;
         TokenType type
-          = Tokens.Types.Get(key,
+          = Types.Get(key,
             System.Globalization.CompareOptions.IgnoreSymbols
               | System.Globalization.CompareOptions.IgnoreCase);
 
         cursor.Skip();
-
-        return new Terminal(type);
+        return new Terminal(parent!, type);
       }
       else {
-        throw new InvalidDataException("Expected an upper-case word token for a terminal token rule.");
+        throw new InvalidDataException(
+          "Expected an upper-case word token for a terminal token rule.");
       }
     }
 
     public TokenType Type { get; }
 
-    private Terminal(TokenType token)
-      => Type = token;
+    public Rule Parent { get; }
+
+    private Terminal(Rule parent, TokenType token)
+      => (Parent, Type) = (parent, token);
 
     public override Expression Parse(TokenCursor cursor)
       => throw new NotImplementedException();

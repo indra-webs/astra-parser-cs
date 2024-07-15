@@ -5,14 +5,21 @@ using Indra.Astra.Expressions;
 
 namespace Indra.Astra.Rules {
   public class Choice
-: Rule, IRule<Choice> {
-    public static new Choice Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
-      Contract.Requires(seq is not null);
-      cursor.Skip(c => c.Type is IWhitespace);
+    : Rule,
+      IRule<Choice>,
+      Rule.IPart {
 
+    public static new Choice Parse(TokenCursor cursor, Rule.Parser.Context context) {
+      Grammar? grammar = context.Grammar;
+      Rule? parent = context.Parent;
+      IReadOnlyList<Rule>? seq = context.Sequence;
+      Contract.Requires(seq is not null);
+      Contract.Requires(parent is not null);
+
+      cursor.Skip(c => c.Type is IWhitespace);
       if(cursor.Current.Is<Pipe>()) {
         cursor.Skip();
-        Rule right = Rule.Parse(cursor, grammar);
+        Rule right = Rule.Parse(cursor, context);
         List<Rule> rules = [];
 
         if(right is Choice choice) {
@@ -29,7 +36,10 @@ namespace Indra.Astra.Rules {
           rules.Add(seq[^1]);
         }
 
-        return new Choice(rules);
+        return new Choice(
+          parent!,
+          rules
+        );
       }
       else {
         throw new InvalidDataException("Expected a pipe to indicate a choice between rules.");
@@ -38,8 +48,10 @@ namespace Indra.Astra.Rules {
 
     public IReadOnlyList<Rule> Rules { get; }
 
-    private Choice(IReadOnlyList<Rule> rules)
-      => Rules = rules;
+    public Rule Parent { get; }
+
+    private Choice(Rule parent, IReadOnlyList<Rule> rules)
+      => (Parent, Rules) = (parent, rules);
 
     public override Expression Parse(TokenCursor cursor)
       => throw new NotImplementedException();

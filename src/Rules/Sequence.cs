@@ -4,16 +4,20 @@ using Indra.Astra.Expressions;
 
 namespace Indra.Astra.Rules {
   public class Sequence
-  : Rule, IRule<Sequence> {
-    public static new Sequence Parse(TokenCursor cursor, Grammar grammar, [NotNull] IReadOnlyList<Rule>? seq = null)
-      => seq is null || seq.Count < 2
+    : Rule,
+      IRule<Sequence>,
+      Rule.IPart {
+    public static new Sequence Parse(TokenCursor cursor, Rule.Parser.Context context)
+      => context.Sequence is null || context.Sequence.Count < 2
         ? throw new ArgumentException("Current parser sequence must contain at least two rules.")
-        : new Sequence(seq);
+        : new Sequence(context.Parent ?? throw new InvalidDataException("Expected a parent rule for a sequence rule."), context.Sequence);
 
     public IReadOnlyList<Rule> Rules { get; }
 
-    private Sequence(IReadOnlyList<Rule> rules)
-      => Rules = rules;
+    public Rule Parent { get; }
+
+    private Sequence(Rule parent, IReadOnlyList<Rule> rules)
+      => (Parent, Rules) = (parent, rules);
 
     public override Expression Parse(TokenCursor cursor)
       => throw new NotImplementedException();

@@ -1,6 +1,6 @@
 namespace Indra.Astra {
 
-  public abstract partial class Grammar {
+  public partial class Grammar {
 
     public record Source(
       string Path,

@@ -5,12 +5,26 @@
     Stx,
     Prx,
     Blx,
-    Mup
+    Mup,
+    Rules
   }
 
   public partial class Parser(Parser.Config config = null!) {
 
     #region Private Fields
+    private readonly Lazy<Lexer> _lexer
+      = new();
+
+    private readonly Lazy<Grammar> _grammar
+      = new(() => new Grammar(
+        Grammar.Sources.Shared,
+        Grammar.Sources.Astra,
+        Grammar.Sources.Markup,
+        Grammar.Sources.XLLogic,
+        Grammar.Sources.Prox,
+        Grammar.Sources.Strux,
+        Grammar.Sources.Blox
+      ));
     #endregion
 
     /// <summary>
@@ -19,18 +33,16 @@
     public record Config;
 
     /// <summary>
-    /// The input to the parser.
+    /// The grammar used by this parser.
     /// </summary>
-    public record Input(
-      Lexer.Result Lexed,
-      FileType FileType = FileType.Axa
-    ) {
-      public static implicit operator Input(Lexer.Result lexed)
-        => new(lexed);
+    public Grammar Grammar
+      => _grammar.Value;
 
-      public static implicit operator Input(string input)
-        => new(input);
-    }
+    /// <summary>
+    /// The lexer used by this parser.
+    /// </summary>
+    public Lexer Lexer
+      => _lexer.Value;
 
     /// <summary>
     /// The configuration settings for this parser.
@@ -38,37 +50,19 @@
     public Config Settings { get; }
       = config ?? new();
 
-    public void Parse(Lexer.Result input) {
-      throw new NotImplementedException();
+    public Result Parse(Input input)
+      => input.FileType switch {
+        FileType.Axa => ParseAxa(input.Lexed),
+        FileType.Stx => ParseStx(input.Lexed),
+        FileType.Prx => ParsePrx(input.Lexed),
+        FileType.Blx => ParseBlx(input.Lexed),
+        FileType.Mup => ParseMup(input.Lexed),
+        FileType.Rules => ParseRules(input.Lexed),
+        _ => throw new InvalidDataException("Unknown file type.")
+      };
+
+    public Result ParseRules(Lexer.Result lexed) {
+
     }
   }
 }
-
-// TODO: toss
-// [CollectionBuilder(typeof(Group), nameof(Build))]
-// public class Group(params Expression[] expressions)
-//     : Expression, IEnumerable<Expression> {
-
-//   public static Group Of(params Expression[] expressions)
-//     => new(expressions);
-
-//   public static Group From(IEnumerable<Expression> expressions)
-//     => new(expressions.ToArray());
-
-//   public static Group Build(ReadOnlySpan<Expression> expressions)
-//     => new(expressions.ToArray());
-
-//   public Expression[] Expressions { get; } = expressions;
-
-//   public static implicit operator Group((Expression left, Expression right) options)
-//     => [options.left, options.right];
-
-//   public static implicit operator Group(Expression[] expressions)
-//     => new(expressions);
-
-//   public IEnumerator<Expression> GetEnumerator()
-//     => ((IEnumerable<Expression>)Expressions).GetEnumerator();
-
-//   IEnumerator IEnumerable.GetEnumerator()
-//     => GetEnumerator();
-// }

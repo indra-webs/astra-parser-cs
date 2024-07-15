@@ -5,16 +5,25 @@ using Indra.Astra.Tokens;
 
 namespace Indra.Astra.Rules {
   public class Immediate
-  : Rule, IRule<Immediate> {
-    public static new Immediate Parse(TokenCursor cursor, Grammar grammar, IReadOnlyList<Rule>? seq = null) {
-      Contract.Requires(seq is null);
-      cursor.Skip(c => c.Type is IWhitespace);
+    : Rule,
+      IRule<Immediate>,
+      Rule.IPart {
 
+    public static new Immediate Parse(TokenCursor cursor, Rule.Parser.Context context) {
+      Grammar? grammar = context.Grammar;
+      Rule? parent = context.Parent;
+      IReadOnlyList<Rule>? seq = context.Sequence;
+      Contract.Requires(seq is null);
+
+      cursor.Skip(c => c.Type is IWhitespace);
       if(cursor.Current.Is<Dot>() && cursor.Current.Padding.HasAny) {
         cursor.Skip();
-        Rule rule = Rule.Parse(cursor, grammar);
+        Rule rule = Rule.Parse(cursor, context);
 
-        return new Immediate(rule);
+        return new Immediate(
+          parent ?? throw new InvalidDataException("Expected a parent rule for an immediate rule."),
+          rule
+        );
       }
       else {
         throw new InvalidDataException("Expected a dot to indicate a concatenation of rules.");
@@ -23,8 +32,10 @@ namespace Indra.Astra.Rules {
 
     public Rule Rule { get; }
 
-    private Immediate(Rule rule)
-      => Rule = rule;
+    public Rule Parent { get; }
+
+    private Immediate(Rule parent, Rule rule)
+      => (Parent, Rule) = (parent, rule);
 
     public override Expression Parse(TokenCursor cursor)
       => throw new NotImplementedException();

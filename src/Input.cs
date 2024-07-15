@@ -1,18 +1,22 @@
-namespace Indra.Astra.Expressions {
-  public abstract partial class Expression {
-    #region Private Fields
-    private readonly Lazy<HashSet<Parser.Flag>> _flags
-        = new();
-    private readonly Lazy<ReadOnlySet<Parser.Flag>> _ro_flags;
-    #endregion
+namespace Indra.Astra
+{
 
-    public string? Key { get; private set; }
+  public partial class Parser
+  {
+    /// <summary>
+    /// The input to the parser.
+    /// </summary>
+    public record Input(
+  Lexer.Result Lexed,
+  FileType FileType = FileType.Axa
+)
+    {
+      public static implicit operator Input(Lexer.Result lexed)
+        => new(lexed);
 
-    public ReadOnlySet<Parser.Flag> Flags
-      => _ro_flags.Value;
-
-    public Expression()
-      => _ro_flags = new(() => new(_flags.Value));
+      public static implicit operator Input(string input)
+        => new(input);
+    }
   }
 }
 
